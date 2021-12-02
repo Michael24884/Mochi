@@ -1,0 +1,16 @@
+<resources>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="discovery">Discovery</string>
+    <string name="just_added">Recently Added</string>
+    <string name="view_more">View More</string>
+    <string name="description">Description</string>
+    <string name="read_more">Read More</string>
+    <string name="read_less">Read Less</string>
+    <string name="view_all_chapters">View All Chapters</string>
+    <string name="read_chapter...">Read Chapter</string>
+    <string name="no_chapters">No Chapters</string>
+    <string name="genres_and_tags">Genres and Tags</string>
+    <string name="search_phrase">Search for a manga</string>
+    <string name="search">Search</string>
+    <string name="clear_search">Clear Search</string>
+</resources>

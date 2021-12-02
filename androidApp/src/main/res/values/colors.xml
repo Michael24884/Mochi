@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#E315DB</color>
+    <color name="colorPrimaryDark">#3700B3</color>
+    <color name="colorAccent">#03DAC5</color>
+    <color name="softGray">#838383</color>
+    <color name="notification">#E57E44</color>
+    <color name="softBlue">#6397E5</color>
+    <color name="softGrayText">#A3A3A3</color>
+</resources>
