@@ -194,7 +194,7 @@ fun StartScreen() {
                  val user = Json.decodeFromString<UserModel>(it.arguments!!.getString("user")!!)
                  LoggedInPage(navController, user)
              }
-             
+
              //Main
 
              composable(Screens.DiscoveryScreen.title) {
