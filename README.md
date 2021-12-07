@@ -1,9 +1,9 @@
 # Mochi
  An unofficial Mangadex app using KMM. The app uses Mangadex new Public API, which may change at any time.
 
-###☢️ !!!Currently in Production. Not intended to be used yet....!!!! ☢️###
+### ☢️ !!!Currently in Production. Not intended to be used yet....!!!! ☢️
 
-####Android 
+#### Android 
 [x] Log in
 
 //(Might move to Android Native Views as Compose currently has really bad support for Pagers, and does not support lazy loading)
@@ -18,7 +18,7 @@
 [] Favorite manga linked to account
 [] Notify on new chapters
 
-####IOS
+#### IOS
 Production has not been started on yet
 
 ### Contributing
