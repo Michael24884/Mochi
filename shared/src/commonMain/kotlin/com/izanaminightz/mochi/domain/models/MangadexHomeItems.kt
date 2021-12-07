@@ -25,6 +25,7 @@ data class MangadexResultsModel (
     val total: Long? = null
 )
 
+
 @Serializable
 data class Datum (
     val id: String? = null,

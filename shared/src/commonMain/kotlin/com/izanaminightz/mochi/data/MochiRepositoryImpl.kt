@@ -11,15 +11,17 @@ import io.ktor.client.features.json.serializer.*
 import io.ktor.client.features.logging.*
 import io.ktor.client.request.*
 import io.ktor.http.*
+import io.ktor.util.pipeline.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.encodeToJsonElement
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.*
 
 @Serializable
 private data class ClientModel(
@@ -28,12 +30,20 @@ private data class ClientModel(
     val password: String,
 )
 
-class MochiRepositoryImpl : MochiRepository {
+@Serializable
+private data class RefreshModel(
+    val token: String
+)
+
+class MochiRepositoryImpl(
+    private val token: UserTokens? = null
+) : MochiRepository {
 
     private val json = Json { ignoreUnknownKeys = true }
 
     private val client = HttpClient {
         expectSuccess = false
+
         install(JsonFeature) {
             val json = Json {
                 ignoreUnknownKeys = true;
@@ -47,8 +57,30 @@ class MochiRepositoryImpl : MochiRepository {
             level = LogLevel.ALL
         }
 
+    }.apply {
+        requestPipeline.intercept(HttpRequestPipeline.State) {
+            if (context.headers.contains("Authorization")) {
+                //Refresh function
+               if (needsRefreshing()) {
+                   println("Refreshing token!!!!")
+                    refreshToken(token!!)?.let {
+                        context.headers["Authorization"] = "Bearer ${it.token!!.session}"
+                        MochiHelper().storeTokens(it)
+                    }
 
+               }
+            }
+        }
     }
+
+
+
+    private fun needsRefreshing() : Boolean {
+        val time = MochiHelper().getTokens().expiresAt
+        val currentClock = Clock.System.now().toLocalDateTime(TimeZone.UTC)
+        return (currentClock > time)
+    }
+
 
     override suspend fun fetchMangadexRecentList(): Flow<MangadexResultsModel> {
         val prefLang = MochiHelper().preferredLanguage().toCode()
@@ -82,7 +114,7 @@ class MochiRepositoryImpl : MochiRepository {
         emit ( data.baseUrl )
     }
 
-    override suspend fun fetchUserStatusList(): Flow<UserListModel> = flow {
+    override suspend fun fetchUserStatusList(): Flow<List<Datum>> = flow {
         val token = MochiHelper().getTokens()
         val response = client.get<String>("${Endpoints.baseURL}/manga/status") {
             headers {
@@ -91,7 +123,17 @@ class MochiRepositoryImpl : MochiRepository {
         }
 
         val json = Json.decodeFromString<UserListModel>(response)
-        emit(json)
+        emit(convertIDToMangaData(json.statuses.keys.toList()))
+
+    }
+
+
+    private suspend fun convertIDToMangaData(ids: List<String>) : List<Datum>  {
+
+        val response = client.get<JsonObject>("${Endpoints.baseURL}/manga?includes[]=cover_art&includes[]=artist&includes[]=author${ids.joinToString(separator = "") { "&ids[]=$it" }}&limit=${ids.size}")
+        val localJson = JsonObject(response)
+        val array =  localJson.jsonObject["data"]!!.jsonArray
+        return json.decodeFromJsonElement(array)
     }
 
     //Login
@@ -114,6 +156,7 @@ class MochiRepositoryImpl : MochiRepository {
 
     }
 
+
     override suspend fun fetchUser(token: String): UserModel {
         val response = client.get<String>("${Endpoints.baseURL}/user/me") {
             headers.append("Authorization", token)
@@ -125,4 +168,18 @@ class MochiRepositoryImpl : MochiRepository {
             id = jsonData.jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content
         )
     }
+
+    private suspend fun refreshToken(tokens: UserTokens): AuthModel {
+        val dial =  client.post<AuthModel>("${Endpoints.baseURL}/auth/refresh") {
+            body = RefreshModel(tokens.refresh)
+            contentType(ContentType.Application.Json)
+        }
+
+        println(dial)
+
+        return dial
+    }
+
+
+
 }

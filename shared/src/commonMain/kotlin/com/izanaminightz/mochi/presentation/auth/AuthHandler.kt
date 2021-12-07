@@ -10,6 +10,9 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.datetime.*
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 sealed class AuthState {
     data class AuthError(val error: String) : AuthState()
@@ -35,7 +38,7 @@ class AuthHandler {
 
         if (client.result == ResultModel.Error)  return AuthState.AuthError(client.errors!!.first().detail)
 
-        saveTokens(client.token!!.session, client.token.refresh) {
+        saveTokens(client.token!!.session, client.token.refresh, ) {
             GlobalScope.launch(Dispatchers.Main) {
                 val loggedUser = repo.fetchUser(it)
                 user(loggedUser)
@@ -45,7 +48,21 @@ class AuthHandler {
         return AuthState.AuthSuccess(client)
     }
 
+//
+//    suspend fun refreshToken(
+//        onRefreshed: (() -> Unit),
+//        onFailed: ((String) -> Unit)
+//    ) {
+//        val tokens = MochiHelper().getTokens()
+//        val userModel = repo.refreshToken(tokens)
+//
+//        if (userModel.errors == null)
+//            onRefreshed()
+//        else onFailed(userModel.errors.first().detail)
+//    }
 
+
+    @OptIn(ExperimentalTime::class)
     private fun saveTokens(
         token: String,
         refresh: String,
@@ -54,7 +71,11 @@ class AuthHandler {
         val prefs = Settings()
         prefs.putString("session", token)
         prefs.putString("refresh", refresh)
+
+        val expiry = (Clock.System.now().plus(Duration.minutes(15))).toLocalDateTime(TimeZone.UTC).toString()
+        prefs.putString("expiry", expiry)
         tokenCB(token)
+
     }
 
 

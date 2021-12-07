@@ -9,7 +9,7 @@ interface MochiRepository {
     suspend fun fetchFeed(id: String) : Flow<MangadexMangaFeed>
     suspend fun searchResultsFor(query: String) : Flow<MangadexResultsModel>
     suspend fun fetchMangaChapterHomeURL(chapterID: String) : Flow<String>
-    suspend fun fetchUserStatusList() : Flow<UserListModel>
+    suspend fun fetchUserStatusList() : Flow<List<Datum>>
 
     //Login
     suspend fun login(userPreferred: String, password: String) : AuthModel

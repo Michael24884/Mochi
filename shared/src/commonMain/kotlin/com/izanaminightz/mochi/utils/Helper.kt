@@ -1,14 +1,21 @@
 package com.izanaminightz.mochi.utils
 
+import com.izanaminightz.mochi.domain.models.AuthModel
 import com.izanaminightz.mochi.domain.models.MangadexLanguages
 import com.izanaminightz.mochi.domain.models.UserModel
 import com.izanaminightz.mochi.domain.models.UserTokens
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.get
 import com.russhwolf.settings.set
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 class MangadexHelper {
     inline fun coverCreator(id: String, image: String?) : String? = if (image != null) "https://uploads.mangadex.org/covers/$id/$image.512.jpg" else null
@@ -30,7 +37,20 @@ class MangadexHelper {
 }
 
 class MochiHelper {
-    fun i() {}
+
+    @OptIn(ExperimentalTime::class)
+    fun storeTokens(
+        auth: AuthModel
+    ) {
+
+        val prefs = Settings()
+        prefs.putString("session", auth.token!!.session)
+        prefs.putString("refresh", auth.token!!.refresh)
+
+        val expiry = (Clock.System.now().plus(Duration.minutes(15))).toLocalDateTime(TimeZone.UTC).toString()
+        prefs.putString("expiry", expiry)
+    }
+
     fun storeLanguage(language: MangadexLanguages) {
         Settings()[LANGUAGE_STORAGE_KEY] = language.name
     }
@@ -65,9 +85,12 @@ class MochiHelper {
     fun getTokens() : UserTokens {
         val session = Settings().get<String>("session")
         val refresh = Settings().get<String>("refresh")
+        val time = Settings().get<String>("expiry")
+        val timer = LocalDateTime.parse(time!!)
         return UserTokens(
             session!!,
             refresh!!,
+            timer,
         )
     }
 

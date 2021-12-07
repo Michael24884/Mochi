@@ -42,6 +42,7 @@ kotlin {
                 implementation("io.ktor:ktor-client-logging:1.6.5")
                 implementation("org.jetbrains.kotlin:kotlin-serialization:1.6.0-RC2")
                 implementation("com.russhwolf:multiplatform-settings-no-arg:0.8.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.1")
             }
         }
         val commonTest by getting {

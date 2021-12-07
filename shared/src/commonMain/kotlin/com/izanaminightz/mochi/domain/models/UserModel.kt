@@ -1,5 +1,6 @@
 package com.izanaminightz.mochi.domain.models
 
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
 
@@ -13,4 +14,5 @@ data class UserModel(
 data class UserTokens(
     val session: String,
     val refresh: String,
+    val expiresAt: LocalDateTime
 )

@@ -10,6 +10,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -115,6 +116,7 @@ fun StartScreen() {
             val d = navController.currentBackStackEntryAsState().value?.destination?.route
            if ((d?.contains("Welcome") == false))
                if ((!d.contains("Logged")))
+                   if ((!d.contains("Reader")))
            BottomNavigation() {
                val navBackStackEntry by navController.currentBackStackEntryAsState()
                val currentDestination = navBackStackEntry?.destination
@@ -148,7 +150,7 @@ fun StartScreen() {
                            Text(
                                text = when (screen) {
                                    BottomNavScreens.Home -> "Discovery"
-                                   BottomNavScreens.List -> "My List"
+                                   BottomNavScreens.List -> "My Library"
                                }
                            )
                        }
@@ -157,74 +159,73 @@ fun StartScreen() {
            }
        }
    ) {
-       AnimatedNavHost(
-           navController = navController,
+     Scaffold(Modifier.padding(it)) {
+         AnimatedNavHost(
+             navController = navController,
 //        startDestination = Screens.DiscoveryScreen.title
-           startDestination = if (completedOnboarding) Screens.DiscoveryScreen.title else "Welcome/1",
-       ) {
+             startDestination = if (completedOnboarding) Screens.DiscoveryScreen.title else "Welcome/1",
+         ) {
 
-           //Welcome
-           composable("Welcome/1") {
-               WelcomePage1(navController)
-           }
+             //Welcome
+             composable("Welcome/1") {
+                 WelcomePage1(navController)
+             }
 
-           composable("Welcome/2") {
-               WelcomePage2(navController)
-           }
+             composable("Welcome/2") {
+                 WelcomePage2(navController)
+             }
 
-           composable("Welcome/3") {
-               WelcomePage3(navController)
-           }
+             composable("Welcome/3") {
+                 WelcomePage3(navController)
+             }
 
-           composable("LoggedInPage/user={user}",
-               enterTransition = {
-                   when (initialState.destination.route) {
-                       "Welcome/2" ->
-                           slideIntoContainer(AnimatedContentScope.SlideDirection.Right)
-                       else -> null
-                   }
-               },
-               arguments = listOf(
-                   navArgument("user") { type = NavType.StringType },
+             composable("LoggedInPage/user={user}",
+                 enterTransition = {
+                     when (initialState.destination.route) {
+                         "Welcome/2" ->
+                             slideIntoContainer(AnimatedContentScope.SlideDirection.Right)
+                         else -> null
+                     }
+                 },
+                 arguments = listOf(
+                     navArgument("user") { type = NavType.StringType },
 
-                   )) {
-               val user = Json.decodeFromString<UserModel>(it.arguments!!.getString("user")!!)
-               LoggedInPage(navController, user)
-           }
+                     )) {
+                 val user = Json.decodeFromString<UserModel>(it.arguments!!.getString("user")!!)
+                 LoggedInPage(navController, user)
+             }
+             
+             //Main
 
+             composable(Screens.DiscoveryScreen.title) {
+                 DiscoveryScreen(navController)
+             }
 
+             composable(Screens.DetailScreen.title, arguments = listOf(
+                 navArgument("mangaID") { type = NavType.StringType }
+             )) { DetailScreen(navController = navController, mangaID = it.arguments!!.getString("mangaID")!! )}
 
+             composable(Screens.FeedScreen.title, arguments = listOf(
+                 navArgument("mangaID") { type = NavType.StringType }
+             )) {
+                 FeedScreen(navController, mangaID = it.arguments!!.getString("mangaID")!! )
+             }
 
-           //Main
+             composable(Screens.SearchScreen.title) {
+                 SearchScreen(navController)
+             }
 
-           composable(Screens.DiscoveryScreen.title) {
-               DiscoveryScreen(navController)
-           }
+             composable(Screens.Reader.title) {
+                 val chapters = navController.previousBackStackEntry?.arguments?.getSerializable("chapters")
 
-           composable(Screens.DetailScreen.title, arguments = listOf(
-               navArgument("mangaID") { type = NavType.StringType }
-           )) { DetailScreen(navController = navController, mangaID = it.arguments!!.getString("mangaID")!! )}
+                 Reader(data = chapters as ReaderDataModel?, navController)
+             }
 
-           composable(Screens.FeedScreen.title, arguments = listOf(
-               navArgument("mangaID") { type = NavType.StringType }
-           )) {
-               FeedScreen(navController, mangaID = it.arguments!!.getString("mangaID")!! )
-           }
+             composable(Screens.List.title) {
+                 ListScreen(navController)
+             }
 
-           composable(Screens.SearchScreen.title) {
-               SearchScreen(navController)
-           }
-
-           composable(Screens.Reader.title) {
-               val chapters = navController.previousBackStackEntry?.arguments?.getSerializable("chapters")
-
-               Reader(data = chapters as ReaderDataModel?, navController)
-           }
-
-           composable(Screens.List.title) {
-               ListScreen(navController)
-           }
-
-       }
+         }
+     }
    }
 }
