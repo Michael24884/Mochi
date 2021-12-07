@@ -3,6 +3,11 @@
 
 ### ☢️ !!!Currently in Production. Not intended to be used yet....!!!! ☢️
 
+
+
+
+
+
 #### Android 
 [x] Log in
 
@@ -17,6 +22,8 @@
 [] Move to next chapter at the end of currently reading
 [] Favorite manga linked to account
 [] Notify on new chapters
+
+Currently need an icon 😎
 
 #### IOS
 Production has not been started on yet
